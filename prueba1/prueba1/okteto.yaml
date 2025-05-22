@@ -7,7 +7,7 @@ sync:
   - .:/var/www/html
 
 forward:
-  - 8080:80
+  - 8080:nginx:80
 
 deploy:
   - kubectl apply -f deployment.yaml
