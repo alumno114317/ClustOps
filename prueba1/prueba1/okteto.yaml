@@ -1,0 +1,18 @@
+name: nginx-development
+image: nginx:latest
+command: ["nginx", "-g", "daemon off;"]
+port: 80
+sync:
+  - .:/var/www/html
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+volumes:
+  - name: nginx-data
+    path: /var/www/html
+    persistentVolumeClaim:
+      claimName: nginx-pvc

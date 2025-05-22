@@ -1,0 +1,14 @@
+---
+name: nginx-development
+image: nginx:latest
+command: ["nginx", "-g", "daemon off;"]
+workdir: /var/www/html
+sync:
+  - .:/var/www/html
+ports:
+  - 80:80
+volumes:
+  - name: nginx-data
+    mountPath: /var/www/html
+    persistentVolumeClaim:
+      claimName: nginx-pvc
