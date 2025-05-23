@@ -1,0 +1,8 @@
+dev:
+  nginx-deployment:
+    image: nginx:latest
+    command: ["nginx", "-g", "daemon off;"]
+    sync:
+      - .:/usr/share/nginx/html
+    forward:
+      - 8080:nginx-service:80
