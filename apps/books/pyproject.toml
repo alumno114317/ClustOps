@@ -1,0 +1,18 @@
+[project]
+name = "books"
+version = "0.1.0"
+description = "Dummy flask app api for testing purposes."
+readme = "README.md"
+authors = [
+    { name = "alumno114317", email = "212340439+alumno114317@users.noreply.github.com" },
+    { name = "srlasagne", email = "art-breach-capitol@duck.com" },
+]
+requires-python = ">=3.13"
+dependencies = ["flask>=3.1.1", "gunicorn>=21.2.0"]
+
+[project.scripts]
+books = "books:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
