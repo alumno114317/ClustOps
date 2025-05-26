@@ -1,0 +1,6 @@
+# Ignorar todos los archivos de Okteto en cualquier subdirectorio de system/
+okteto.yml
+okteto.yaml
+
+# Ignorarc todos los archivos README
+README.md

@@ -1,0 +1,27 @@
+# filepath: ClustOps/system/app-books/okteto.yml
+name: app-books-dev
+namespace: mi-sistema # El namespace donde está tu deployment
+context: microk8s # O el nombre de tu contexto de kubectl para MicroK8s
+
+# Reemplaza el deployment existente con tu entorno de desarrollo
+deploy:
+  - microk8s.kubectl apply -f deploy/ # Asumiendo que tus manifiestos de app-books están en una subcarpeta 'deploy'
+
+dev:
+  app-books: # Nombre de un contenedor en tu deployment (o el único si solo hay uno)
+    image: okteto/python:3.11 # O una imagen base de Python compatible con tu app y uv
+    command: ["uv", "run", "flask", "run", "--host=0.0.0.0", "--port=5000"] # Comando para iniciar tu app con uv y Flask en modo desarrollo
+    sync:
+      - .:/usr/src/app # Sincroniza el directorio actual (donde está app.py) con /usr/src/app en el contenedor
+    forward:
+      - 5000:5000 # Puerto local al puerto del contenedor (para Flask)
+      # - 9229:9229 # Si quisieras depuración remota
+    volumes:
+      - /root/.cache/uv # Persistir la caché de uv entre sesiones de desarrollo
+    # Si necesitas instalar dependencias al iniciar el entorno de desarrollo:
+    # lifecycle:
+    #   on আফp:
+    #     - uv sync --no-dev # O el comando que uses para instalar dependencias
+    # O mejor, si tu imagen base ya tiene uv, puedes usarlo en el 'command'
+    # y el 'sync' se encargará de los cambios en el código fuente.
+    # El `uv run flask run` debería usar el `pyproject.toml` para el entorno.

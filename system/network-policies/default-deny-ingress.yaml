@@ -1,4 +1,4 @@
-// filepath: Prueba2/network-policies/default-deny-ingress.yaml
+# filepath: Prueba2/network-policies/default-deny-ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

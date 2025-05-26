@@ -1,0 +1,36 @@
+# filepath: ClustOps/system/web-service/nginx-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config # Nombre del mapa de Nginx
+  namespace: mi-sistema
+data:
+  default.conf: | # Nombre del archivo de configuración dentro de Nginx
+    server {
+        listen 80; # Nginx escucha en el puerto 80
+
+        # Para la API de libros
+        location /api/books/ {
+            # Le dice a Nginx a dónde enviar las peticiones para /api/books/
+            # El nombre largo es la dirección interna de app-books-service
+            proxy_pass http://app-books-service.mi-sistema.svc.cluster.local:5000/books/;
+            # Estas líneas ayudan a que la comunicación funcione bien
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # (Opcional) Para probar el balanceo de Nginx
+        location = /nginx-hostname {
+            default_type text/plain;
+            return 200 "Servidor Nginx: $hostname\n"; # $hostname es el nombre del pod de Nginx
+        }
+
+        # Para la página principal de Nginx (si tienes un index.html)
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+            try_files $uri $uri/ /index.html =404; # Intenta servir archivos estáticos
+        }
+    }

@@ -1,4 +1,4 @@
-// filepath: Prueba2/client-pods/ubuntu-client-denied.yaml
+# filepath: Prueba2/client-pods/ubuntu-client-denied.yaml
 apiVersion: v1
 kind: Pod
 metadata:

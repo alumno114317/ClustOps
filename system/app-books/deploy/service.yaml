@@ -7,7 +7,9 @@ metadata:
   labels:
     app: app-books
 spec:
-  type: NodePort
+  type: ClusterIP # Tipo de servicio, puede ser ClusterIP, NodePort, LoadBalancer, etc.
+  # ClusterIP es el tipo por defecto y expone el servicio en una IP interna del clúster.
+  # Si necesitas acceso externo, puedes cambiar a NodePort o LoadBalancer.
   selector:
     app: app-books
   ports:

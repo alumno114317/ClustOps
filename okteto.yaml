@@ -1,9 +1,0 @@
-dev:
-  nginx:
-    image: nginx:latest
-    command: ["nginx", "-g", "daemon off;"]
-    forward:
-      - 8080:80
-    sync:
-      - .:/usr/share/nginx/html
-
