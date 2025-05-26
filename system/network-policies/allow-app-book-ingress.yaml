@@ -1,0 +1,14 @@
+# filepath: ClustOps/deploys/network-policies/allow-app-books-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-books-ingress
+  namespace: mi-sistema
+spec:
+  podSelector:
+    matchLabels:
+      app: app-books
+  policyTypes:
+  - Ingress
+  ingress:
+  - {} # Permite todo el tráfico entrante a los pods de app-books

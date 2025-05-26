@@ -1,0 +1,16 @@
+// filepath: Prueba2/network-policies/allow-nginx-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-nginx-ingress
+  namespace: mi-sistema
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx # Aplica solo a los pods de Nginx
+  policyTypes:
+  - Ingress
+  ingress:
+  - {} # Esta regla vacía permite todo el tráfico entrante a los pods seleccionados
+       # Podríamos ser más específicos aquí, por ejemplo, permitiendo solo desde ciertos CIDR
+       # o desde pods con ciertas etiquetas.

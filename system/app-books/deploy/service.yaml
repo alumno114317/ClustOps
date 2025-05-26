@@ -1,0 +1,17 @@
+# filepath: ClustOps/deploys/app-books/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-books-service
+  namespace: mi-sistema
+  labels:
+    app: app-books
+spec:
+  type: NodePort
+  selector:
+    app: app-books
+  ports:
+  - protocol: TCP
+    port: 5000       # Puerto interno del servicio en el clúster (puede ser el mismo que targetPort)
+    targetPort: 5000 # Puerto en los pods (el containerPort de tu app Flask)
+    # nodePort: 30005 # Opcional: especifica un NodePort o deja que Kubernetes elija

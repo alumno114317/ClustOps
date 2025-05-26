@@ -1,0 +1,18 @@
+// filepath: Prueba2/client-pods/ubuntu-client-denied.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-client-denied
+  namespace: default # O cualquier otro namespace que no sea 'mi-sistema'
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu:22.04
+    command: ["sleep", "3600"]
+    resources:
+      requests:
+        cpu: 10m    # 10 millicores (1% de un CPU)
+        memory: 32Mi  # 32 megabytes
+      limits:
+        cpu: 50m    # 50 millicores (5% de un CPU)
+        memory: 64Mi  # 64 megabytes

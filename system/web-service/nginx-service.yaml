@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: mi-sistema
+  labels:
+    app: nginx
+spec:
+  type: NodePort # Podrías cambiar a LoadBalancer si configuras MetalLB en MicroK8s
+  selector:
+    app: nginx # Selecciona los pods con la etiqueta app:nginx
+  ports:
+  - protocol: TCP
+    port: 80       # Puerto en el que el servicio está disponible DENTRO del clúster
+    targetPort: 80 # Puerto en los pods al que se dirige el tráfico
+    # nodePort: 30080 # Opcional: puedes especificar un NodePort o dejar que Kubernetes elija uno

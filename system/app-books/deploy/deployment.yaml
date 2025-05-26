@@ -1,0 +1,48 @@
+# filepath: ClustOps/deploys/app-books/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-books-deployment
+  namespace: mi-sistema # Usando el namespace existente
+  labels:
+    app: app-books
+spec:
+  replicas: 3 # Puedes aumentar esto más tarde
+  selector:
+    matchLabels:
+      app: app-books
+  template:
+    metadata:
+      labels:
+        app: app-books
+    spec:
+      containers:
+      - name: app-books-container
+        image: app-books:latest # La imagen que construiste
+        imagePullPolicy: IfNotPresent # Para imágenes locales en MicroK8s
+        ports:
+        - containerPort: 5000 # El puerto en el que tu app Flask escucha
+          env: # Opcional: puedes definir FLASK_PORT o FLASK_HOST aquí si es necesario
+        # - name: FLASK_PORT
+        #   value: "5000"
+        # - name: FLASK_HOST
+        #   value: "0.0.0.0"
+        readinessProbe:
+          httpGet:
+            path: / # La ruta raíz de tu app
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
