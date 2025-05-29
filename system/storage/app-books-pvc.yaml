@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-books-data-pvc
+  namespace: mi-sistema # En el mismo namespace que tu app
+spec:
+  accessModes:
+    - ReadWriteOnce # Puede ser montado como lectura-escritura por un solo nodo (adecuado para hostPath y muchos casos de uso)
+  storageClassName: microk8s-hostpath # O el nombre de tu StorageClass por defecto si es diferente
+  resources:
+    requests:
+      storage: 1Gi # Solicita 1 GiB de almacenamiento

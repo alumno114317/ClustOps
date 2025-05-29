@@ -1,0 +1,270 @@
+# filepath: ClustOps/system/web-service/frontend-books-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-books-html # Nombre del ConfigMap que contendrá el HTML de la interfaz de Libros
+  namespace: mi-sistema
+data:
+  books_ui.html: |
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gestor de Libros</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                margin: 20px;
+                background-color: #f4f4f4;
+                color: #333;
+            }
+            .container {
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            h1, h2 {
+                color: #333;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #e9e9e9;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+            }
+            input[type="text"], input[type="number"] {
+                width: calc(100% - 22px);
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+            button {
+                background-color: #5cb85c;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-right: 5px;
+            }
+            button:hover {
+                background-color: #4cae4c;
+            }
+            button.edit {
+                background-color: #f0ad4e;
+            }
+            button.edit:hover {
+                background-color: #ec971f;
+            }
+            button.delete {
+                background-color: #d9534f;
+            }
+            button.delete:hover {
+                background-color: #c9302c;
+            }
+            .hidden {
+                display: none;
+            }
+            #error-message {
+                color: red;
+                margin-bottom: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Gestor de Libros</h1>
+            <div id="error-message"></div>
+
+            <h2>Añadir/Editar Libro</h2>
+            <form id="book-form">
+                <input type="hidden" id="book-id">
+                <div class="form-group">
+                    <label for="title">Título:</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="author">Autor:</label>
+                    <input type="text" id="author" required>
+                </div>
+                <button type="submit" id="save-button">Guardar</button>
+                <button type="button" id="cancel-button" class="hidden" onclick="cancelEdit()">Cancelar</button>
+            </form>
+
+            <h2>Lista de Libros</h2>
+            <button onclick="fetchBooks()">Refrescar Lista</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="books-table-body">
+                    <!-- Las filas de libros se insertarán aquí -->
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+            const apiUrl = '/api/books/'; // La ruta configurada en Nginx para la API
+            const form = document.getElementById('book-form');
+            const bookIdInput = document.getElementById('book-id');
+            const titleInput = document.getElementById('title');
+            const authorInput = document.getElementById('author');
+            const booksTableBody = document.getElementById('books-table-body');
+            const saveButton = document.getElementById('save-button');
+            const cancelButton = document.getElementById('cancel-button');
+            const errorMessageDiv = document.getElementById('error-message');
+
+            function displayError(message) {
+                errorMessageDiv.textContent = message;
+            }
+
+            function clearError() {
+                errorMessageDiv.textContent = '';
+            }
+
+            async function fetchBooks() {
+                clearError();
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    const books = await response.json();
+                    booksTableBody.innerHTML = ''; // Limpiar tabla
+                    if (books && books.length > 0) {
+                        books.forEach(book => {
+                            const row = booksTableBody.insertRow();
+                            row.insertCell().textContent = book.id;
+                            row.insertCell().textContent = book.title;
+                            row.insertCell().textContent = book.author;
+                            const actionsCell = row.insertCell();
+                            const editButton = document.createElement('button');
+                            editButton.textContent = 'Editar';
+                            editButton.classList.add('edit');
+                            editButton.onclick = () => loadBookForEdit(book);
+                            actionsCell.appendChild(editButton);
+
+                            const deleteButton = document.createElement('button');
+                            deleteButton.textContent = 'Borrar';
+                            deleteButton.classList.add('delete');
+                            deleteButton.onclick = () => deleteBook(book.id);
+                            actionsCell.appendChild(deleteButton);
+                        });
+                    } else {
+                         booksTableBody.innerHTML = '<tr><td colspan="4">No hay libros disponibles.</td></tr>';
+                    }
+                } catch (error) {
+                    console.error('Error al cargar libros:', error);
+                    displayError(`No se pudieron cargar los libros: ${error.message}. ¿Está el backend funcionando y accesible a través de Nginx en ${apiUrl}?`);
+                }
+            }
+
+            function loadBookForEdit(book) {
+                bookIdInput.value = book.id;
+                titleInput.value = book.title;
+                authorInput.value = book.author;
+                saveButton.textContent = 'Actualizar';
+                cancelButton.classList.remove('hidden');
+            }
+
+            function resetForm() {
+                form.reset();
+                bookIdInput.value = '';
+                saveButton.textContent = 'Guardar';
+                cancelButton.classList.add('hidden');
+            }
+
+            function cancelEdit() {
+                resetForm();
+            }
+
+            async function saveOrUpdateBook(event) {
+                event.preventDefault();
+                clearError();
+                const id = bookIdInput.value;
+                const title = titleInput.value;
+                const author = authorInput.value;
+
+                if (!title || !author) {
+                    displayError("Título y Autor son campos requeridos.");
+                    return;
+                }
+
+                const bookData = { title, author };
+                let method = 'POST';
+                let url = apiUrl;
+
+                if (id) { // Si hay ID, es una actualización (PUT)
+                    method = 'PUT';
+                    url += `${id}`;
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(bookData),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(`Error HTTP ${response.status}: ${errorData.message}`);
+                    }
+                    
+                    resetForm();
+                    fetchBooks(); // Recargar la lista
+                } catch (error) {
+                    console.error('Error al guardar/actualizar libro:', error);
+                    displayError(`Error al guardar el libro: ${error.message}`);
+                }
+            }
+
+            async function deleteBook(id) {
+                clearError();
+                if (!confirm('¿Estás seguro de que quieres borrar este libro?')) {
+                    return;
+                }
+                try {
+                    const response = await fetch(`${apiUrl}${id}`, {
+                        method: 'DELETE',
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(`Error HTTP ${response.status}: ${errorData.message}`);
+                    }
+                    fetchBooks(); // Recargar la lista
+                } catch (error) {
+                    console.error('Error al borrar libro:', error);
+                    displayError(`Error al borrar el libro: ${error.message}`);
+                }
+            }
+
+            form.addEventListener('submit', saveOrUpdateBook);
+            // Cargar libros al iniciar la página
+            fetchBooks();
+        </script>
+    </body>
+    </html>

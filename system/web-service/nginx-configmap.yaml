@@ -2,35 +2,42 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-config # Nombre del mapa de Nginx
+  name: nginx-config # Asegúrate que el nombre y namespace coincidan
   namespace: mi-sistema
 data:
-  default.conf: | # Nombre del archivo de configuración dentro de Nginx
+  default.conf: |
     server {
-        listen 80; # Nginx escucha en el puerto 80
+        listen 80 default_server;
+        listen [::]:80 default_server;
 
-        # Para la API de libros
-        location /api/books/ {
-            # Le dice a Nginx a dónde enviar las peticiones para /api/books/
-            # El nombre largo es la dirección interna de app-books-service
-            proxy_pass http://app-books-service.mi-sistema.svc.cluster.local:5000/books/;
-            # Estas líneas ayudan a que la comunicación funcione bien
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
+        error_log /dev/stderr debug; # <--- AÑADE ESTO
 
-        # (Opcional) Para probar el balanceo de Nginx
-        location = /nginx-hostname {
-            default_type text/plain;
-            return 200 "Servidor Nginx: $hostname\n"; # $hostname es el nombre del pod de Nginx
-        }
+        # Raíz de documentos estándar de Nginx
+        root /usr/share/nginx/html;
+        # Archivos índice estándar
+        index index.html index.htm;
 
-        # Para la página principal de Nginx (si tienes un index.html)
+        # Location para la raíz. Debería servir el index.html por defecto de Nginx
         location / {
-            root   /usr/share/nginx/html;
-            index  index.html index.htm;
-            try_files $uri $uri/ /index.html =404; # Intenta servir archivos estáticos
+            try_files $uri $uri/ /index.html =404;
         }
-    }
+
+          location /api/books/ {
+              dav_methods off; # <--- AÑADE ESTA LÍNEA
+              proxy_pass http://app-books-service.mi-sistema.svc.cluster.local:5000/books/;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+          }
+ 
+ 
+          location = /books-ui {
+              try_files /ui/books_ui.html =404; 
+          }
+         
+          location = /nginx-hostname {
+              default_type text/plain;
+              return 200 "Servidor Nginx: $hostname\n"; 
+          }
+    } 

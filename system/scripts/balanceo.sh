@@ -9,5 +9,5 @@ for i in {1..10}; do
   echo "Petición $i:"
   resultado=$(curl http://${IP_NODO}:${NODEPORT})
   echo "$resultado"
-  sleep 0.5
+  sleep 1
 done
