@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: app-books-nfs-pv # Nombre único para este PV
+spec:
+  capacity:
+    storage: 1Gi # Debe ser igual o mayor que lo que pide el PVC
+  accessModes:
+    - ReadWriteOnce # Adecuado para la mayoría de las apps de un solo pod o statefulsets simples
+  persistentVolumeReclaimPolicy: Retain # ¡Importante! Los datos en NFS no se borrarán si el PV/PVC se elimina
+  mountOptions: # Opciones de montaje para NFSv4 (comunes en Ubuntu reciente)
+    - vers=4
+   # - nfsvers=4 # Redundante pero no daña
+    - proto=tcp
+    - timeo=600
+    - retrans=2
+    - hard      # Para asegurar que las operaciones se reintenten
+  nfs:
+    path: /srv/nfs/app_books_data # La ruta EXACTA que exportaste en el servidor NFS
+    server: 127.0.0.1 # IP del servidor NFS. Como corre en el mismo WSL, 127.0.0.1 funciona.
+    readOnly: false

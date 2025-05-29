@@ -5,8 +5,9 @@ metadata:
   namespace: mi-sistema # En el mismo namespace que tu app
 spec:
   accessModes:
-    - ReadWriteOnce # Puede ser montado como lectura-escritura por un solo nodo (adecuado para hostPath y muchos casos de uso)
-  storageClassName: microk8s-hostpath # O el nombre de tu StorageClass por defecto si es diferente
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi # Solicita 1 GiB de almacenamiento
+  storageClassName: "" # <--- AÑADE ESTA LÍNEA para enlazar a un PV estático
+  volumeName: app-books-nfs-pv # <--- AÑADE ESTA LÍNEA para enlazar explícitamente a tu PV NFS

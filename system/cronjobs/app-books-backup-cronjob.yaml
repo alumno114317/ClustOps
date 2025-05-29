@@ -4,9 +4,9 @@ metadata:
   name: app-books-backup
   namespace: mi-sistema
 spec:
-  schedule: "*/5 * * * *" # Ejecutar cada 5 minutos (para pruebas)
-  successfulJobsHistoryLimit: 3 # Conserva los últimos 3 jobs exitosos
-  failedJobsHistoryLimit: 1    # Conserva el último job fallido
+  schedule: "*/5 * * * *" # Ejecutar cada 5 minutos
+  successfulJobsHistoryLimit: 1 # Conserva los últimos 3 jobs/pods exitosos
+  failedJobsHistoryLimit: 1    # Conserva el último job/pod fallido
   jobTemplate:
     spec:
       template:
@@ -15,60 +15,74 @@ spec:
           containers:
           - name: backup-runner
             image: ubuntu:22.04
+            env: # <--- AÑADIR ESTO
+            - name: TZ
+              value: "Europe/Madrid" # O tu zona horaria deseada, ej: "America/New_York"
             command: ["/bin/bash", "-c"]
             args:
             - |
               set -e;
-              # Rutas DENTRO DEL CONTENEDOR, correspondientes a los volumeMounts
-              SOURCE_DATA_DIR_IN_CONTAINER="/mnt/host-pv";
-              BACKUP_DEST_DIR_IN_CONTAINER="/mnt/host-backup-dest";
+              SOURCE_DATA_DIR_IN_CONTAINER="/mnt/app-data"; # Datos de la app (desde NFS via PVC)
+              BACKUP_DEST_DIR_IN_CONTAINER="/mnt/host-backup-dest"; # Destino del backup en el host
 
-              BACKUP_FILENAME="app-books-backup-$(date +%Y%m%d-%H%M%S).tar.gz";
+              BACKUP_FILENAME="app-books-backup-$(date +%Y-%m-%d_%H-%M-%S).tar.gz";
               
               echo "Iniciando backup de ${SOURCE_DATA_DIR_IN_CONTAINER} a ${BACKUP_DEST_DIR_IN_CONTAINER}/${BACKUP_FILENAME}";
               
-              # Asegúrate de que el directorio de origen exista y tenga contenido
+              # Asegura que el directorio de origen exista y tenga contenido
+              # Si está vacío, se creará un backup vacío.
               if [ ! -d "${SOURCE_DATA_DIR_IN_CONTAINER}" ] || [ -z "$(ls -A ${SOURCE_DATA_DIR_IN_CONTAINER})" ]; then
-                echo "Error: El directorio de origen ${SOURCE_DATA_DIR_IN_CONTAINER} no existe o está vacío."
-                # Puedes decidir si salir con error o continuar para crear un backup vacío (no recomendado)
-                # exit 1; # Descomenta para salir si el origen está vacío
+                echo "Advertencia: El directorio de origen ${SOURCE_DATA_DIR_IN_CONTAINER} no existe o está vacío. Se creará un backup vacío."
+                mkdir -p "${SOURCE_DATA_DIR_IN_CONTAINER}" # Asegura que tar no falle si el dir no existe
               fi
-
-              # Asegúrate de que el directorio de destino exista
+              
+              # Asegura que el directorio de destino exista
               mkdir -p "${BACKUP_DEST_DIR_IN_CONTAINER}";
-
+              
+              # Crear el backup
               tar -czvf "${BACKUP_DEST_DIR_IN_CONTAINER}/${BACKUP_FILENAME}" -C "${SOURCE_DATA_DIR_IN_CONTAINER}" . ;
               
               echo "Backup completado: ${BACKUP_DEST_DIR_IN_CONTAINER}/${BACKUP_FILENAME}";
               
-              echo "Limpiando backups antiguos, conservando solo el último...";
-              cd "${BACKUP_DEST_DIR_IN_CONTAINER}"; # cd al directorio de backups DENTRO DEL CONTENEDOR
+              # Limpiar backups antiguos, conservando solo el último
+              echo "Limpiando backups antiguos en ${BACKUP_DEST_DIR_IN_CONTAINER}, conservando solo el último...";
+              cd "${BACKUP_DEST_DIR_IN_CONTAINER}";
+              echo "Directorio actual para limpieza: $(pwd)"
+              
+              # Listar archivos antes de la limpieza para depuración
+              echo "Archivos de backup encontrados antes de la limpieza:"
+              ls -1 app-books-backup-*.tar.gz 2>/dev/null || echo "Ningún archivo de backup encontrado con el patrón."
               
               NUM_BACKUPS=$(ls -1 app-books-backup-*.tar.gz 2>/dev/null | wc -l);
+              echo "Número de backups encontrados: $NUM_BACKUPS"
               
               if [ "$NUM_BACKUPS" -gt 1 ]; then
-                ls -1 app-books-backup-*.tar.gz | head -n -1 | while read OLD_BACKUP; do
-                  echo "Eliminando backup antiguo: $OLD_BACKUP";
-                  rm "$OLD_BACKUP";
+                # Listar los archivos que se van a eliminar (todos menos el más reciente)
+                echo "Archivos a eliminar (todos menos el último lexicográficamente, ordenado por nombre):"
+                ls -1 app-books-backup-*.tar.gz | sort | head -n -1
+                
+                # Eliminar los archivos antiguos
+                ls -1 app-books-backup-*.tar.gz | sort | head -n -1 | while read OLD_BACKUP; do
+                  echo "Intentando eliminar: $OLD_BACKUP";
+                  rm -v "$OLD_BACKUP";
                 done
               else
                 echo "No hay suficientes backups antiguos para eliminar (se necesita más de 1).";
               fi
               
-              echo "Backups actuales en ${BACKUP_DEST_DIR_IN_CONTAINER}:";
+              echo "Backups actuales en ${BACKUP_DEST_DIR_IN_CONTAINER} después de la limpieza:";
               ls -lh;
 
             volumeMounts:
-            - name: host-pv-storage # Este nombre debe coincidir con el 'volumes' de abajo
-              mountPath: /mnt/host-pv # Ruta DENTRO del contenedor para los datos del PV
-            - name: host-backup-destination # Este nombre debe coincidir con el 'volumes' de abajo
-              mountPath: /mnt/host-backup-dest # Ruta DENTRO del contenedor para el destino del backup
+            - name: app-data-volume # Monta el PVC de los datos de la app
+              mountPath: /mnt/app-data
+            - name: host-backup-destination # Monta el directorio de backup del host
+              mountPath: /mnt/host-backup-dest
           volumes:
-          - name: host-pv-storage
+          - name: app-data-volume # Define el volumen que usa el PVC
+            persistentVolumeClaim:
+              claimName: app-books-data-pvc # Nombre de tu PVC
+          - name: host-backup-destination # Define el volumen que usa el hostPath
             hostPath:
-              path:          /var/snap/microk8s/common/default-storage/mi-sistema-app-books-data-pvc-pvc-4b3741e0-99b6-407f-af65-c22c1a1ce954 # Ruta REAL en el HOST
-              type: Directory
-          - name: host-backup-destination
-            hostPath:
-              path: "/home/alumno114317/ClustOps/backup" # Ruta REAL en el HOST
+              path: "/home/alumno114317/ClustOps/backup" # Ruta en el NODO HOST para los backups
               type: DirectoryOrCreate

@@ -46,10 +46,10 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "250m"
-        volumeMounts:         # <--- AÑADIR ESTA SECCIÓN
-        - name: app-books-storage  # Debe coincidir con el nombre en la sección 'volumes' de abajo
-          mountPath: /data         # La ruta dentro del contenedor donde se montará el volumen
-      volumes:                  # <--- AÑADIR ESTA SECCIÓN (al mismo nivel que 'containers')
-      - name: app-books-storage  # Un nombre para este volumen dentro de la definición del pod
+        volumeMounts:
+        - name: app-storage # Un nombre para el volumeMount
+          mountPath: /data # Donde app.py espera encontrar books.json
+      volumes:
+      - name: app-storage
         persistentVolumeClaim:
-          claimName: app-books-data-pvc # El nombre de tu PVC
+          claimName: app-books-data-pvc # El PVC que ahora usa NFS
