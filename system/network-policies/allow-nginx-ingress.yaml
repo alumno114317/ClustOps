@@ -1,16 +1,22 @@
-# filepath: Prueba2/network-policies/allow-nginx-ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-nginx-ingress
-  namespace: mi-sistema
+  namespace: mi-sistema # La política opera dentro de este namespace
 spec:
   podSelector:
     matchLabels:
-      app: nginx # Aplica solo a los pods de Nginx
+      app: nginx # Aplica a los pods de Nginx
   policyTypes:
   - Ingress
   ingress:
-  - {} # Esta regla vacía permite todo el tráfico entrante a los pods seleccionados
-       # Podríamos ser más específicos aquí, por ejemplo, permitiendo solo desde ciertos CIDR
-       # o desde pods con ciertas etiquetas.
+  - from:
+    - namespaceSelector: # Selecciona el namespace de origen
+        matchLabels:
+          # Esta etiqueta es estándar y está presente en todos los namespaces,
+          # apuntando al nombre del propio namespace.
+          kubernetes.io/metadata.name: mi-sistema
+      podSelector: {} # Un podSelector vacío aquí significa CUALQUIER pod en el namespace seleccionado arriba
+    ports:
+    - protocol: TCP
+      port: 80 # El puerto en el que Nginx escucha

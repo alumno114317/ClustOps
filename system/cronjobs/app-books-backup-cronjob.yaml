@@ -5,7 +5,7 @@ metadata:
   namespace: mi-sistema
 spec:
   schedule: "*/5 * * * *" # Ejecutar cada 5 minutos
-  successfulJobsHistoryLimit: 1 # Conserva los últimos 3 jobs/pods exitosos
+  successfulJobsHistoryLimit: 1 # Conserva el último job/pod exitoso
   failedJobsHistoryLimit: 1    # Conserva el último job/pod fallido
   jobTemplate:
     spec:
@@ -22,13 +22,34 @@ spec:
             args:
             - |
               set -e;
+              
+              # --- Inicio de la sección para configurar la zona horaria ---
+              echo "Configurando zona horaria y actualizando tzdata..."
+              # Asegurar que TZ esté seteada y exportada para este script
+              export TZ="Europe/Madrid" 
+              
+              # Actualizar lista de paquetes e instalar/reconfigurar tzdata
+              # DEBIAN_FRONTEND=noninteractive evita preguntas durante la instalación
+              apt-get update > /dev/null
+              DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata > /dev/null
+              
+              # Opcional: Forzar el enlace simbólico y reconfigurar (puede ser redundante pero no daña)
+              # ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+              # dpkg-reconfigure -f noninteractive tzdata
+              
+              echo "Zona horaria actual del contenedor según 'date' (después de configurar): $(date)"
+              echo "Variable TZ establecida: $TZ"
+              # --- Fin de la sección para configurar la zona horaria ---
+
               SOURCE_DATA_DIR_IN_CONTAINER="/mnt/app-data"; # Datos de la app (desde NFS via PVC)
               BACKUP_DEST_DIR_IN_CONTAINER="/mnt/host-backup-dest"; # Destino del backup en el host
 
+              # Ahora el comando date debería usar la zona horaria configurada
               BACKUP_FILENAME="app-books-backup-$(date +%Y-%m-%d_%H-%M-%S).tar.gz";
               
               echo "Iniciando backup de ${SOURCE_DATA_DIR_IN_CONTAINER} a ${BACKUP_DEST_DIR_IN_CONTAINER}/${BACKUP_FILENAME}";
               
+              # ... (resto de tu script de backup: if, mkdir, tar, limpieza, etc.) ...
               # Asegura que el directorio de origen exista y tenga contenido
               # Si está vacío, se creará un backup vacío.
               if [ ! -d "${SOURCE_DATA_DIR_IN_CONTAINER}" ] || [ -z "$(ls -A ${SOURCE_DATA_DIR_IN_CONTAINER})" ]; then

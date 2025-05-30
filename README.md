@@ -1,7 +1,3 @@
 # ClustOps
-Los manifest de la carpeta GPT fallaban los pods del ingress.
 
-Los de la carpeta prueba1 no, pero fallaba curl a http:nginx.local con error 404.
-Estaba añadido al /etc/hosts correctamente, resolvía el nombre.
-
-
+ Cluster de alta disponibilidad de kubernetes sobre microk8s como integración de una API de prueba para TFG con ejercicios de prueba de funcionamiento desde clientes externos e internos y/o root, alta disponibilidad, resiliencia, persistencia de servicios y datos, filtrado de tráfico, seguridad de red, con desarollo CND en local con Okteto y CI/CD con Git, integrado con terminal de VSCode.

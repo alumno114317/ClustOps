@@ -11,8 +11,8 @@ spec:
     command: ["sleep", "3600"]
     resources:
       requests:
-        cpu: 10m    # 10 millicores (1% de un CPU)
-        memory: 32Mi  # 32 megabytes
+        cpu: "250m"    # 0.25 CPU
+        memory: "256Mi"  # 256 megabytes
       limits:
-        cpu: 50m    # 50 millicores (5% de un CPU)
-        memory: 64Mi  # 64 megabytes
+        cpu: "500m"    # 0.5 CPU
+        memory: "512Mi"  # 512 megabytes
