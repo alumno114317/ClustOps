@@ -15,7 +15,6 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
-
 # Ruta al archivo de datos persistentes dentro del contenedor (donde se monta el PVC)
 DATA_FILE_PATH = "/data/books.json"
 
@@ -30,7 +29,6 @@ initial_books: list[dict] = [
     {"id": 7, "title": "Harry Potter and the Deathly Hallows", "author": "J.K. Rowling"},
 ]
 app.logger.info(f"Definición de initial_books contiene {len(initial_books)} libros.")
-
 
 books: list[dict] = [] # Se cargará desde el archivo o se inicializará
 
@@ -64,7 +62,6 @@ def save_books_to_file():
 # Cargar los libros al iniciar la aplicación
 load_books_from_file()
 
-
 # Definición de rutas para la respuesta de la ruta raíz
 routes: list[dict[str, str]] = [
     {"path": "/", "methods": ["GET"], "description": "Muestra esta información de rutas."},
@@ -80,12 +77,10 @@ routes: list[dict[str, str]] = [
 def index() -> Response:
     return jsonify({"message": "Welcome to the Books API!", "available_routes": routes})
 
-
 @app.route("/books", methods=["GET"])
 def get_books() -> Response:
     app.logger.info(f"GET /books - Devolviendo {len(books)} libros.")
     return jsonify(books)
-
 
 @app.route("/books/<int:book_id>", methods=["GET"])
 def get_book(book_id: int) -> Response:
@@ -95,7 +90,6 @@ def get_book(book_id: int) -> Response:
         return jsonify(book)
     app.logger.warning(f"GET /books/{book_id} - Libro no encontrado.")
     return jsonify({"message": "Book not found"}), 404
-
 
 @app.route("/books", methods=["POST"])
 def add_book() -> tuple[Response, Literal[201]]:
@@ -115,7 +109,6 @@ def add_book() -> tuple[Response, Literal[201]]:
     save_books_to_file()
     app.logger.info(f"Libro añadido con ID {next_id}: {new_book['title']}")
     return jsonify(new_book), 201
-
 
 @app.route("/books/<int:book_id>", methods=["PUT"])
 def update_book(book_id: int) -> Response:
@@ -141,7 +134,6 @@ def update_book(book_id: int) -> Response:
     app.logger.info(f"Libro actualizado con ID {book_id}: {book['title']}")
     return jsonify(book), 200
 
-
 @app.route("/books/<int:book_id>", methods=["DELETE"])
 def delete_book(book_id: int) -> Response:
     global books
@@ -161,14 +153,11 @@ def delete_book(book_id: int) -> Response:
     app.logger.info(f"Libro borrado con ID {book_id}")
     return jsonify({"message": "Book deleted successfully"}), 200
 
-
-
 @app.route('/app-hostname', methods=['GET'])
 def app_hostname():
     hostname = socket.gethostname()
     app.logger.info(f"GET /app-hostname - Devolviendo hostname: {hostname}")
     return jsonify({"message": "app-books pod", "hostname": hostname})
-
 
 if __name__ == "__main__":
     host: str = os.getenv("FLASK_HOST", "0.0.0.0")

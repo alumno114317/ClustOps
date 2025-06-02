@@ -6,7 +6,7 @@ metadata:
   labels:
     app: nginx
 spec:
-  type: NodePort # Podrías cambiar a LoadBalancer si configuras MetalLB en MicroK8s
+  type: NodePort 
   selector:
     app: nginx # Selecciona los pods con la etiqueta app:nginx
   ports:

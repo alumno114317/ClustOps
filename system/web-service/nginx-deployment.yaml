@@ -50,14 +50,14 @@ spec:
           limits:
             cpu: "250m"
             memory: "256Mi"
-        volumeMounts: # <--- SECCIÓN IMPORTANTE MODIFICADA/AÑADIDA
+        volumeMounts: 
         - name: nginx-conf-volume # Para la configuración de Nginx (default.conf)
           mountPath: /etc/nginx/conf.d/default.conf # Ruta estándar donde Nginx carga configuraciones adicionales
           subPath: default.conf # La clave del ConfigMap 'nginx-config' que contiene tu default.conf
         - name: frontend-books-volume # Para la interfaz gráfica de libros
           mountPath: /usr/share/nginx/html/ui/books_ui.html # Ruta donde Nginx encontrará el books_ui.html
           subPath: books_ui.html # La clave del ConfigMap 'frontend-books-html'
-      volumes: # <--- SECCIÓN IMPORTANTE MODIFICADA/AÑADIDA
+      volumes: 
       - name: nginx-conf-volume # Define el volumen para la configuración de Nginx
         configMap:
           name: nginx-config # Nombre del ConfigMap que contiene tu default.conf personalizado
