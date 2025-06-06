@@ -8,3 +8,6 @@ spec:
   podSelector: {} # Selecciona todos los pods en el namespace
   policyTypes:
   - Ingress # Aplica a tráfico entrante
+  #  Cuando una NetworkPolicy selecciona pods y especifica Ingress en policyTypes pero no define ninguna regla
+  # ingress que permita tráfico, el comportamiento predeterminado es denegar todo el tráfico entrante a los 
+  # pods seleccionados.

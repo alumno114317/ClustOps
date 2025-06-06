@@ -1,3 +1,5 @@
+#flepath: ClustOps/system/web-service/nginx-deployment.yaml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,8 +8,7 @@ metadata:
   labels:
     app: nginx
 spec:
-  replicas: 3
-  
+  replicas: 3 
   selector:
     matchLabels:
       app: nginx

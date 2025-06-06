@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#filepath: system/scripts/libros.sh
 # libros.sh - Gestiona registros de libros mediante una API.
 
 # URL base de la API de libros

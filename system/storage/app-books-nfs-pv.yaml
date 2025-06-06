@@ -1,3 +1,5 @@
+#filepath: system/storage/app-books-nfs-pv.yaml
+
 apiVersion: v1
 kind: PersistentVolume
 metadata:

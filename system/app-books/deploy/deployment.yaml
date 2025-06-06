@@ -7,7 +7,7 @@ metadata:
   labels:
     app: app-books
 spec:
-  replicas: 1 # Puedes aumentar esto más tarde
+  replicas: 1 # Para aumentar se debe integrar la API y BBDD a futuro
   selector:
     matchLabels:
       app: app-books

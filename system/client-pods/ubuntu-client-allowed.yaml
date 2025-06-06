@@ -4,8 +4,8 @@ kind: Pod
 metadata:
   name: ubuntu-client-allowed
   namespace: mi-sistema # En el mismo namespace
-  labels:
-    client: allowed # Podríamos usar esta etiqueta en una NetworkPolicy más específica
+ # labels:
+   # client: allowed # Podríamos usar esta etiqueta en una NetworkPolicy más específica
 spec:
   containers:
   - name: ubuntu

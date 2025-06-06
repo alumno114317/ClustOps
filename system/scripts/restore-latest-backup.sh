@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#filepath : /home/alumno114317/ClustOps/system/scripts/restore-latest-backup.sh
 # restore_latest_backup.sh - Script para restaurar el único backup disponible de app-books al PV.
 
 # --- Configuración ---
@@ -12,7 +13,6 @@ BACKUP_SOURCE_DIR="/home/alumno114317/ClustOps/backup"
 
 echo "--- Iniciando Proceso de Restauración del Último Backup ---"
 
-# ... (el resto del script de búsqueda de backup no necesita cambios) ...
 # filepath: /home/alumno114317/ClustOps/system/scripts/restore-latest-backup.sh
 # ...existing code...
 BACKUP_FILES_FOUND=$(find "${BACKUP_SOURCE_DIR}" -maxdepth 1 -name "app-books-backup-*.tar.gz" -type f)
@@ -65,7 +65,7 @@ fi
 echo ""
 
 echo "Paso 2: Restaurando backup desde ${FULL_BACKUP_PATH} a ${PV_HOSTPATH}..."
-# Necesitarás permisos para escribir en PV_HOSTPATH (el share NFS)
+# Se necesitarán permisos para escribir en PV_HOSTPATH (el share NFS)
 # Si ejecutas este script como root (sudo), y tienes no_root_squash en /etc/exports, debería funcionar.
 tar -xzvf "$FULL_BACKUP_PATH" -C "$PV_HOSTPATH" -m --no-same-owner --no-same-permissions
 if [ $? -eq 0 ]; then
@@ -78,9 +78,7 @@ echo ""
 
 echo "Paso 3: Verificando contenido restaurado en ${PV_HOSTPATH}:"
 ls -lhA "${PV_HOSTPATH}"
-# ... (el resto del script no necesita cambios) ...
 # filepath: /home/alumno114317/ClustOps/system/scripts/restore-latest-backup.sh
-# ...existing code...
 echo ""
 echo "--- Proceso de Restauración Completado ---"
 echo "Recuerda reiniciar los pods de la aplicación 'app-books-deployment' para que carguen los datos restaurados:"
